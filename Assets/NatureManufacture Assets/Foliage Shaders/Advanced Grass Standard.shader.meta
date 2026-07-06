@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 839bdc3011e43e34683d62152d2a10dc
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 103151
+  packageName: Advanced Foliage Pack 2.0
+  packageVersion: 3.1.2
+  assetPath: Assets/NatureManufacture Assets/Foliage Shaders/Advanced Grass Standard.shader
+  uploadId: 880618

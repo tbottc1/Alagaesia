@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: bce85fc976a01924790d3bf3b63b506e
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 103151
+  packageName: Advanced Foliage Pack 2.0
+  packageVersion: 3.1.2
+  assetPath: Assets/NatureManufacture Assets/Foliage Shaders/NM_indirect.cginc
+  uploadId: 880618
