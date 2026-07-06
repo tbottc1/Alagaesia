@@ -19,6 +19,8 @@
 /[Ll]ogs/
 /[Uu]ser[Ss]ettings/
 /[Ee]xamples/
+**/[Ee]xamples/**
+**/[Ee]xamples.meta
 [Ee]xamples.meta
 *.log
 
