@@ -1,0 +1,4 @@
+repository "Alagaësia/Alagaësia@2475989817460@cloud"
+  path "/"
+    br "/main"
+    co "/main"
