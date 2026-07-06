@@ -21,7 +21,14 @@
 /[Ee]xamples/
 **/[Ee]xamples/**
 **/[Ee]xamples.meta
+**/[Ee]xamples & [Ee]xtras/**
 [Ee]xamples.meta
+[Ee]xamples & [Ee]xtras/
+[Ee]xamples & [Ee]xtras.meta
+[Ee]xample/
+[Ee]xample.meta
+
+
 *.log
 
 # By default unity supports Blender asset imports, *.blend1 blender files do not need to be committed to version control.
