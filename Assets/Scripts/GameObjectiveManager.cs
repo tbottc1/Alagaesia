@@ -175,7 +175,7 @@ public class GameObjectiveManager : MonoBehaviour
 
             case ObjectiveState.HuntDeer:
                 return
-                    "Hunt and collect two deer.\n" +
+                    "Hunt and collect two deer in the grassy mountains.\n" +
                     "Deer Collected: " +
                     deerCollected +
                     " / " +

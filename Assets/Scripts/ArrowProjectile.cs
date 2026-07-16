@@ -50,7 +50,8 @@ public class ArrowProjectile : MonoBehaviour
             return;
         }
 
-        transform.rotation = Quaternion.LookRotation(direction);
+        transform.rotation =
+            Quaternion.LookRotation(direction);
 
         arrowRigidbody.AddForce(
             direction.normalized * speed,
@@ -60,19 +61,22 @@ public class ArrowProjectile : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (hasHitSomething || arrowRigidbody == null)
+        if (hasHitSomething ||
+            arrowRigidbody == null)
         {
             return;
         }
 
-        Vector3 movementDirection = arrowRigidbody.linearVelocity;
+        Vector3 movementDirection =
+            arrowRigidbody.linearVelocity;
 
         if (movementDirection.sqrMagnitude >
             minimumRotationSpeed * minimumRotationSpeed)
         {
-            transform.rotation = Quaternion.LookRotation(
-                movementDirection.normalized
-            );
+            transform.rotation =
+                Quaternion.LookRotation(
+                    movementDirection.normalized
+                );
         }
     }
 
@@ -85,13 +89,27 @@ public class ArrowProjectile : MonoBehaviour
 
         hasHitSomething = true;
 
+        // Check whether the arrow struck a deer.
+        DeerHuntTarget deer =
+            collision.collider
+                .GetComponentInParent<DeerHuntTarget>();
+
+        if (deer != null)
+        {
+            deer.HitByArrow(this);
+        }
+
         if (!stickIntoObjects)
         {
             return;
         }
 
-        arrowRigidbody.linearVelocity = Vector3.zero;
-        arrowRigidbody.angularVelocity = Vector3.zero;
+        arrowRigidbody.linearVelocity =
+            Vector3.zero;
+
+        arrowRigidbody.angularVelocity =
+            Vector3.zero;
+
         arrowRigidbody.useGravity = false;
         arrowRigidbody.isKinematic = true;
 
@@ -100,6 +118,9 @@ public class ArrowProjectile : MonoBehaviour
             arrowCollider.enabled = false;
         }
 
-        transform.SetParent(collision.transform, true);
+        transform.SetParent(
+            collision.transform,
+            true
+        );
     }
 }

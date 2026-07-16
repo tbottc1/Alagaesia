@@ -10,9 +10,10 @@ public class TutorialHintManager : MonoBehaviour
 
     [Header("References")]
     public PlayerInventory playerInventory;
+    public GameObjectiveManager gameManager;
 
-    private bool playerOpenedMenu = false;
-    private bool menuTutorialComplete = false;
+    private bool playerOpenedMenu;
+    private bool menuTutorialComplete;
 
     private string currentMessage = "";
 
@@ -23,12 +24,16 @@ public class TutorialHintManager : MonoBehaviour
 
     private void Start()
     {
+        FindReferences();
         SetHint("Press TAB to open your menu.");
     }
 
     private void Update()
     {
-        if (GameUIManager.Instance == null || playerInventory == null)
+        FindReferences();
+
+        if (GameUIManager.Instance == null ||
+            playerInventory == null)
         {
             return;
         }
@@ -41,9 +46,31 @@ public class TutorialHintManager : MonoBehaviour
         }
     }
 
+    private void FindReferences()
+    {
+        if (playerInventory == null)
+        {
+            BasicThirdPersonPlayer player =
+                FindAnyObjectByType<BasicThirdPersonPlayer>();
+
+            if (player != null)
+            {
+                playerInventory =
+                    player.GetComponent<PlayerInventory>();
+            }
+        }
+
+        if (gameManager == null)
+        {
+            gameManager =
+                FindAnyObjectByType<GameObjectiveManager>();
+        }
+    }
+
     private void HandleMenuTutorialStep()
     {
-        bool menuOpen = GameUIManager.Instance.MenuOpen;
+        bool menuOpen =
+            GameUIManager.Instance.MenuOpen;
 
         if (!playerOpenedMenu)
         {
@@ -56,7 +83,8 @@ public class TutorialHintManager : MonoBehaviour
             return;
         }
 
-        if (!menuTutorialComplete && !menuOpen)
+        if (!menuTutorialComplete &&
+            !menuOpen)
         {
             menuTutorialComplete = true;
         }
@@ -66,23 +94,50 @@ public class TutorialHintManager : MonoBehaviour
     {
         if (!playerInventory.hasBackpack)
         {
-            SetHint("Find your backpack near the starting area.");
+            SetHint(
+                "Find your backpack near the starting area."
+            );
         }
         else if (!playerInventory.hasSaddle)
         {
-            SetHint("Visit the Saddler inside his shop.");
+            SetHint(
+                "Visit the Saddler inside his shop."
+            );
         }
         else if (!playerInventory.hasBow)
         {
-            SetHint("Visit the Fletcher inside his shop.");
+            SetHint(
+                "Visit the Fletcher inside his shop."
+            );
         }
         else if (playerInventory.arrowCount <= 0)
         {
-            SetHint("You are out of arrows. Return to the Fletcher.");
+            SetHint(
+                "You are out of arrows. Return to the Fletcher."
+            );
+        }
+        else if (gameManager == null)
+        {
+            SetHint("");
+        }
+        else if (!gameManager.archeryTrainingComplete)
+        {
+            SetHint(
+                "Go to the archery range and hit all five targets."
+            );
+        }
+        else if (gameManager.deerCollected <
+                 gameManager.deerRequired)
+        {
+            SetHint(
+                "Go hunt and collect two deer up in the grassy mountains."
+            );
         }
         else
         {
-            SetHint("");
+            SetHint(
+                "You are ready for your dragon."
+            );
         }
     }
 
@@ -98,7 +153,10 @@ public class TutorialHintManager : MonoBehaviour
         if (tutorialText != null)
         {
             tutorialText.text = message;
-            tutorialText.gameObject.SetActive(!string.IsNullOrEmpty(message));
+
+            tutorialText.gameObject.SetActive(
+                !string.IsNullOrEmpty(message)
+            );
         }
     }
 }

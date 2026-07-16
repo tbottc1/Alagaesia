@@ -1031,6 +1031,7 @@ GameObject:
   - component: {fileID: 7922649801668778610}
   - component: {fileID: 7922649801668778611}
   - component: {fileID: -3279594891617813005}
+  - component: {fileID: -6989427127042927744}
   m_Layer: 0
   m_Name: Deer_001 1
   m_TagString: Untagged
@@ -1153,6 +1154,31 @@ MonoBehaviour:
   fleeTargetDistance: 12
   fleeRetargetInterval: 0.5
   currentState: 0
+--- !u!114 &-6989427127042927744
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7402009758359158996}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 632666d96e6f47641b7898fb752ac08c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DeerHuntTarget
+  deerAI: {fileID: -3279594891617813005}
+  creatureMover: {fileID: 7922649801668778611}
+  deerAnimator: {fileID: 7922649801668778610}
+  deerController: {fileID: 7922649801668778605}
+  visualRoot: {fileID: 7922649801668778606}
+  defeatedLocalEulerAngles: {x: 0, y: 0, z: 90}
+  fallSpeed: 5
+  collectDistance: 2.5
+  collectPrompt: Press E to collect deer.
+  gameManager: {fileID: 0}
+  deerHitSound: {fileID: 0}
+  deerCollectSound: {fileID: 0}
+  soundVolume: 0.8
 --- !u!1 &7500468941402322376
 GameObject:
   m_ObjectHideFlags: 0

@@ -14,6 +14,7 @@ public class DeerAI : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private Transform player;
+    [SerializeField] private DeerSpawnZone spawnZone;
 
     [Header("Wandering")]
     [SerializeField] private float wanderRadius = 12f;
@@ -24,7 +25,7 @@ public class DeerAI : MonoBehaviour
     [Header("Ground Detection")]
     [SerializeField] private LayerMask groundLayers = ~0;
     [SerializeField] private float groundCheckHeight = 15f;
-    [SerializeField] private float groundCheckDistance = 40f;
+    [SerializeField] private float groundCheckDistance = 60f;
 
     [Header("Fleeing")]
     [SerializeField] private float fleeDistance = 10f;
@@ -50,13 +51,20 @@ public class DeerAI : MonoBehaviour
 
     public bool IsDefeated
     {
-        get { return currentState == DeerState.Defeated; }
+        get
+        {
+            return currentState ==
+                   DeerState.Defeated;
+        }
     }
 
     private void Awake()
     {
-        creatureMover = GetComponent<CreatureMover>();
-        homePosition = transform.position;
+        creatureMover =
+            GetComponent<CreatureMover>();
+
+        homePosition =
+            transform.position;
     }
 
     private void Start()
@@ -67,7 +75,8 @@ public class DeerAI : MonoBehaviour
 
     private void Update()
     {
-        if (currentState == DeerState.Defeated)
+        if (currentState ==
+            DeerState.Defeated)
         {
             StopMoving();
             return;
@@ -76,6 +85,13 @@ public class DeerAI : MonoBehaviour
         if (player == null)
         {
             FindPlayer();
+        }
+
+        if (spawnZone != null &&
+            !spawnZone.ContainsXZ(transform.position))
+        {
+            ReturnToSpawnZone();
+            return;
         }
 
         CheckForPlayer();
@@ -94,6 +110,12 @@ public class DeerAI : MonoBehaviour
                 UpdateFleeingState();
                 break;
         }
+    }
+
+    public void SetSpawnZone(
+        DeerSpawnZone newSpawnZone)
+    {
+        spawnZone = newSpawnZone;
     }
 
     private void FindPlayer()
@@ -115,7 +137,10 @@ public class DeerAI : MonoBehaviour
         }
 
         float distanceToPlayer =
-            FlatDistance(transform.position, player.position);
+            FlatDistance(
+                transform.position,
+                player.position
+            );
 
         if (currentState != DeerState.Fleeing &&
             distanceToPlayer <= fleeDistance)
@@ -141,9 +166,13 @@ public class DeerAI : MonoBehaviour
         MoveTowardTarget(false);
 
         float distanceToTarget =
-            FlatDistance(transform.position, movementTarget);
+            FlatDistance(
+                transform.position,
+                movementTarget
+            );
 
-        if (distanceToTarget <= targetReachDistance)
+        if (distanceToTarget <=
+            targetReachDistance)
         {
             EnterIdleState();
         }
@@ -158,7 +187,10 @@ public class DeerAI : MonoBehaviour
         }
 
         float distanceToPlayer =
-            FlatDistance(transform.position, player.position);
+            FlatDistance(
+                transform.position,
+                player.position
+            );
 
         if (distanceToPlayer >= calmDistance)
         {
@@ -166,12 +198,14 @@ public class DeerAI : MonoBehaviour
             return;
         }
 
-        if (Time.time >= nextFleeRetargetTime)
+        if (Time.time >=
+            nextFleeRetargetTime)
         {
             ChooseFleeTarget();
 
             nextFleeRetargetTime =
-                Time.time + fleeRetargetInterval;
+                Time.time +
+                fleeRetargetInterval;
         }
 
         MoveTowardTarget(true);
@@ -179,24 +213,29 @@ public class DeerAI : MonoBehaviour
 
     private void EnterIdleState()
     {
-        currentState = DeerState.Idle;
+        currentState =
+            DeerState.Idle;
 
-        stateTimer = Random.Range(
-            minimumIdleTime,
-            maximumIdleTime
-        );
+        stateTimer =
+            Random.Range(
+                minimumIdleTime,
+                maximumIdleTime
+            );
 
         StopMoving();
     }
 
     private void EnterWanderingState()
     {
-        currentState = DeerState.Wandering;
+        currentState =
+            DeerState.Wandering;
     }
 
     private void EnterFleeingState()
     {
-        currentState = DeerState.Fleeing;
+        currentState =
+            DeerState.Fleeing;
+
         nextFleeRetargetTime = 0f;
 
         ChooseFleeTarget();
@@ -204,36 +243,49 @@ public class DeerAI : MonoBehaviour
 
     private void ChooseWanderTarget()
     {
-        const int maximumAttempts = 10;
-
-        for (int attempt = 0;
-             attempt < maximumAttempts;
-             attempt++)
+        if (spawnZone != null)
         {
-            Vector2 randomOffset =
-                Random.insideUnitCircle * wanderRadius;
-
-            Vector3 possibleTarget =
-                homePosition +
-                new Vector3(
-                    randomOffset.x,
+            bool foundPoint =
+                spawnZone.TryGetRandomGroundPoint(
+                    groundLayers,
                     groundCheckHeight,
-                    randomOffset.y
+                    groundCheckDistance,
+                    out Vector3 zoneTarget
                 );
 
-            if (TryFindGround(
-                    possibleTarget,
-                    out Vector3 groundedTarget))
+            if (foundPoint)
             {
-                movementTarget = groundedTarget;
+                movementTarget = zoneTarget;
                 EnterWanderingState();
                 return;
             }
         }
 
-        // If no valid terrain point was found,
-        // wait and try again later.
-        EnterIdleState();
+        Vector2 randomOffset =
+            Random.insideUnitCircle *
+            wanderRadius;
+
+        Vector3 possibleTarget =
+            homePosition +
+            new Vector3(
+                randomOffset.x,
+                groundCheckHeight,
+                randomOffset.y
+            );
+
+        if (TryFindGround(
+                possibleTarget,
+                out Vector3 groundedTarget))
+        {
+            movementTarget =
+                groundedTarget;
+
+            EnterWanderingState();
+        }
+        else
+        {
+            EnterIdleState();
+        }
     }
 
     private void ChooseFleeTarget()
@@ -244,35 +296,79 @@ public class DeerAI : MonoBehaviour
         }
 
         Vector3 fleeDirection =
-            transform.position - player.position;
+            transform.position -
+            player.position;
 
         fleeDirection.y = 0f;
 
-        if (fleeDirection.sqrMagnitude < 0.01f)
+        if (fleeDirection.sqrMagnitude <
+            0.01f)
         {
-            fleeDirection = -transform.forward;
+            fleeDirection =
+                -transform.forward;
         }
 
         fleeDirection.Normalize();
 
-        Vector3 possibleTarget =
+        Vector3 desiredTarget =
             transform.position +
-            fleeDirection * fleeTargetDistance;
+            fleeDirection *
+            fleeTargetDistance;
 
-        possibleTarget.y += groundCheckHeight;
+        if (spawnZone != null)
+        {
+            spawnZone.TryGetGroundPointInside(
+                desiredTarget,
+                groundLayers,
+                groundCheckHeight,
+                groundCheckDistance,
+                out movementTarget
+            );
+
+            return;
+        }
+
+        desiredTarget.y +=
+            groundCheckHeight;
 
         if (TryFindGround(
-                possibleTarget,
+                desiredTarget,
                 out Vector3 groundedTarget))
         {
-            movementTarget = groundedTarget;
+            movementTarget =
+                groundedTarget;
         }
         else
         {
             movementTarget =
                 transform.position +
-                fleeDirection * fleeTargetDistance;
+                fleeDirection *
+                fleeTargetDistance;
         }
+    }
+
+    private void ReturnToSpawnZone()
+    {
+        if (spawnZone == null)
+        {
+            return;
+        }
+
+        Vector3 desiredTarget =
+            spawnZone.WorldBounds.center;
+
+        spawnZone.TryGetGroundPointInside(
+            desiredTarget,
+            groundLayers,
+            groundCheckHeight,
+            groundCheckDistance,
+            out movementTarget
+        );
+
+        currentState =
+            DeerState.Wandering;
+
+        MoveTowardTarget(true);
     }
 
     private bool TryFindGround(
@@ -287,25 +383,28 @@ public class DeerAI : MonoBehaviour
                 groundLayers,
                 QueryTriggerInteraction.Ignore))
         {
-            groundPosition = hit.point;
+            groundPosition =
+                hit.point;
+
             return true;
         }
 
-        groundPosition = transform.position;
+        groundPosition =
+            transform.position;
+
         return false;
     }
 
-    private void MoveTowardTarget(bool running)
+    private void MoveTowardTarget(
+        bool running)
     {
         if (creatureMover == null)
         {
             return;
         }
 
-        Vector2 movementInput = Vector2.up;
-
         creatureMover.SetInput(
-            movementInput,
+            Vector2.up,
             movementTarget,
             running,
             false
@@ -319,13 +418,12 @@ public class DeerAI : MonoBehaviour
             return;
         }
 
-        Vector2 movementInput = Vector2.zero;
-
         Vector3 lookTarget =
-            transform.position + transform.forward;
+            transform.position +
+            transform.forward;
 
         creatureMover.SetInput(
-            movementInput,
+            Vector2.zero,
             lookTarget,
             false,
             false
@@ -352,10 +450,15 @@ public class DeerAI : MonoBehaviour
             return;
         }
 
-        currentState = DeerState.Defeated;
+        currentState =
+            DeerState.Defeated;
+
         StopMoving();
 
-        Debug.Log(name + " has been defeated.");
+        Debug.Log(
+            name +
+            " has been defeated."
+        );
     }
 
     private void OnDisable()
