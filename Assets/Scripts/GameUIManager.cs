@@ -258,7 +258,7 @@ public class GameUIManager : MonoBehaviour
                 "Backpack: " + YesNo(playerInventory.hasBackpack) + "\n" +
                 "Saddle: " + YesNo(playerInventory.hasSaddle) + "\n" +
                 "Bow: " + YesNo(playerInventory.hasBow) + "\n" +
-                "Arrows: " + YesNo(playerInventory.hasArrows) + "\n" +
+                "Arrows: " + playerInventory.arrowCount + "\n" +
                 "Dragon Egg: " + YesNo(playerInventory.hasDragonEgg);
         }
     }

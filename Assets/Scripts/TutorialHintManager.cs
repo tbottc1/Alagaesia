@@ -72,9 +72,13 @@ public class TutorialHintManager : MonoBehaviour
         {
             SetHint("Visit the Saddler inside his shop.");
         }
-        else if (!playerInventory.hasBow || !playerInventory.hasArrows)
+        else if (!playerInventory.hasBow)
         {
             SetHint("Visit the Fletcher inside his shop.");
+        }
+        else if (playerInventory.arrowCount <= 0)
+        {
+            SetHint("You are out of arrows. Return to the Fletcher.");
         }
         else
         {

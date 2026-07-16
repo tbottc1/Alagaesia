@@ -7,22 +7,36 @@ public class GameObjectiveManager : MonoBehaviour
         GetBackpack,
         BuySaddle,
         BuyBowAndArrows,
+        RestockArrows,
+        CompleteArcheryTraining,
+        HuntDeer,
+        ReadyForDragon,
+
+        // Kept so older scripts referencing these states still compile.
         ChooseDragonEgg,
         BoardBoat,
+
         Complete
     }
 
     [Header("Current Objective")]
-    public ObjectiveState currentObjective = ObjectiveState.GetBackpack;
+    public ObjectiveState currentObjective =
+        ObjectiveState.GetBackpack;
+
+    [Header("Archery Progress")]
+    public bool archeryTrainingComplete = false;
+
+    [Header("Hunting Progress")]
+    public int deerCollected = 0;
+    public int deerRequired = 2;
 
     private PlayerInventory playerInventory;
-    private bool gameComplete = false;
+    private bool gameComplete;
 
     private void Start()
     {
         FindPlayerInventory();
-        UpdateObjectiveFromInventory();
-        SendObjectiveToUI();
+        RefreshCurrentObjective();
     }
 
     private void Update()
@@ -30,25 +44,32 @@ public class GameObjectiveManager : MonoBehaviour
         if (playerInventory == null)
         {
             FindPlayerInventory();
-            return;
+
+            if (playerInventory == null)
+            {
+                return;
+            }
         }
 
-        UpdateObjectiveFromInventory();
+        UpdateObjectiveFromProgress();
     }
 
     private void FindPlayerInventory()
     {
-        BasicThirdPersonPlayer player = FindAnyObjectByType<BasicThirdPersonPlayer>();
+        BasicThirdPersonPlayer player =
+            FindAnyObjectByType<BasicThirdPersonPlayer>();
 
         if (player != null)
         {
-            playerInventory = player.GetComponent<PlayerInventory>();
+            playerInventory =
+                player.GetComponent<PlayerInventory>();
         }
     }
 
-    private void UpdateObjectiveFromInventory()
+    private void UpdateObjectiveFromProgress()
     {
-        ObjectiveState newObjective = GetObjectiveFromInventory();
+        ObjectiveState newObjective =
+            GetObjectiveFromProgress();
 
         if (newObjective == currentObjective)
         {
@@ -57,12 +78,15 @@ public class GameObjectiveManager : MonoBehaviour
 
         currentObjective = newObjective;
 
-        Debug.Log("Objective updated: " + currentObjective);
+        Debug.Log(
+            "Objective updated: " +
+            currentObjective
+        );
 
         SendObjectiveToUI();
     }
 
-    private ObjectiveState GetObjectiveFromInventory()
+    private ObjectiveState GetObjectiveFromProgress()
     {
         if (gameComplete)
         {
@@ -84,17 +108,35 @@ public class GameObjectiveManager : MonoBehaviour
             return ObjectiveState.BuySaddle;
         }
 
-        if (!playerInventory.hasBow || !playerInventory.hasArrows)
+        if (!playerInventory.hasBow)
         {
             return ObjectiveState.BuyBowAndArrows;
         }
 
-        if (!playerInventory.hasDragonEgg)
+        if (playerInventory.arrowCount <= 0)
         {
-            return ObjectiveState.ChooseDragonEgg;
+            return ObjectiveState.RestockArrows;
         }
 
-        return ObjectiveState.BoardBoat;
+        if (!archeryTrainingComplete)
+        {
+            return ObjectiveState.CompleteArcheryTraining;
+        }
+
+        if (deerCollected < deerRequired)
+        {
+            return ObjectiveState.HuntDeer;
+        }
+
+        return ObjectiveState.ReadyForDragon;
+    }
+
+    private void RefreshCurrentObjective()
+    {
+        currentObjective =
+            GetObjectiveFromProgress();
+
+        SendObjectiveToUI();
     }
 
     private void SendObjectiveToUI()
@@ -104,7 +146,9 @@ public class GameObjectiveManager : MonoBehaviour
             return;
         }
 
-        GameUIManager.Instance.SetObjective(GetObjectiveText());
+        GameUIManager.Instance.SetObjective(
+            GetObjectiveText()
+        );
     }
 
     private string GetObjectiveText()
@@ -120,23 +164,92 @@ public class GameObjectiveManager : MonoBehaviour
             case ObjectiveState.BuyBowAndArrows:
                 return "Buy a bow and arrows from the fletcher.";
 
+            case ObjectiveState.RestockArrows:
+                return
+                    "You are out of arrows. " +
+                    "Return to the fletcher.";
+
+            case ObjectiveState.CompleteArcheryTraining:
+                return
+                    "Go to the archery range and hit all five targets.";
+
+            case ObjectiveState.HuntDeer:
+                return
+                    "Hunt and collect two deer.\n" +
+                    "Deer Collected: " +
+                    deerCollected +
+                    " / " +
+                    deerRequired;
+
+            case ObjectiveState.ReadyForDragon:
+                return
+                    "You have proven yourself. " +
+                    "You are ready for your dragon.";
+
             case ObjectiveState.ChooseDragonEgg:
-                return "Return to the egg chamber and choose your dragon egg.";
+                return
+                    "Return to the egg chamber and choose your dragon egg.";
 
             case ObjectiveState.BoardBoat:
-                return "Board the boat and leave Vroengard.";
+                return
+                    "Board the boat and leave Vroengard.";
 
             case ObjectiveState.Complete:
-                return "You have left Vroengard with your dragon egg.";
+                return
+                    "Your training is complete.";
 
             default:
                 return "No current objective.";
         }
     }
 
+    public void CompleteArcheryTraining()
+    {
+        if (archeryTrainingComplete)
+        {
+            return;
+        }
+
+        archeryTrainingComplete = true;
+
+        Debug.Log("Archery training marked complete.");
+
+        RefreshCurrentObjective();
+    }
+
+    public void RegisterDeerCollected()
+    {
+        if (!archeryTrainingComplete)
+        {
+            Debug.Log(
+                "The player cannot complete the hunting objective yet."
+            );
+
+            return;
+        }
+
+        if (deerCollected >= deerRequired)
+        {
+            return;
+        }
+
+        deerCollected++;
+
+        Debug.Log(
+            "Deer collected: " +
+            deerCollected +
+            " / " +
+            deerRequired
+        );
+
+        RefreshCurrentObjective();
+    }
+
     public bool CanChooseDragonEgg()
     {
-        return currentObjective == ObjectiveState.ChooseDragonEgg;
+        return
+            currentObjective == ObjectiveState.ReadyForDragon ||
+            currentObjective == ObjectiveState.ChooseDragonEgg;
     }
 
     public bool CanBoardBoat()
@@ -148,6 +261,7 @@ public class GameObjectiveManager : MonoBehaviour
     {
         gameComplete = true;
         currentObjective = ObjectiveState.Complete;
+
         SendObjectiveToUI();
 
         Debug.Log("Game complete.");
