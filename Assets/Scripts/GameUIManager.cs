@@ -77,6 +77,12 @@ public class GameUIManager : MonoBehaviour
 
     private void Update()
     {
+        if (PauseMenuController.IsPaused)
+        {
+            KeepCursorFreeForMenu();
+            return;
+        }
+        
         if (Keyboard.current != null && Keyboard.current.tabKey.wasPressedThisFrame)
         {
             TogglePlayerMenu();
@@ -98,7 +104,7 @@ public class GameUIManager : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (menuOpen)
+        if (menuOpen || PauseMenuController.IsPaused)
         {
             KeepCursorFreeForMenu();
         }
