@@ -11,6 +11,7 @@ public class GameUIManager : MonoBehaviour
     public TextMeshProUGUI goldText;
     public TextMeshProUGUI interactionPromptText;
     public TextMeshProUGUI messageText;
+    public GameObject dialogue_status;
 
     [Header("Player Menu")]
     public GameObject playerMenuPanel;
@@ -315,8 +316,16 @@ public class GameUIManager : MonoBehaviour
 
     private IEnumerator MessageRoutine(string message)
     {
-        messageText.gameObject.SetActive(true);
-        messageText.text = message;
+        if (dialogue_status != null)
+        {
+            dialogue_status.SetActive(true);
+        }
+
+        if (messageText != null)
+        {
+            messageText.gameObject.SetActive(true);
+            messageText.text = message;
+        }
 
         yield return new WaitForSecondsRealtime(messageDuration);
 
@@ -325,13 +334,16 @@ public class GameUIManager : MonoBehaviour
 
     private void ClearMessage()
     {
-        if (messageText == null)
+        if (messageText != null)
         {
-            return;
+            messageText.text = "";
+            messageText.gameObject.SetActive(false);
         }
 
-        messageText.text = "";
-        messageText.gameObject.SetActive(false);
+        if (dialogue_status != null)
+        {
+            dialogue_status.SetActive(false);
+        }
     }
 
     private string YesNo(bool value)

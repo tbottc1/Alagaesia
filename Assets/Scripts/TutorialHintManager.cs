@@ -133,11 +133,15 @@ public class TutorialHintManager : MonoBehaviour
                 "Go hunt and collect two deer up in the grassy mountains."
             );
         }
-        else
+        else if (!playerInventory.hasDragonEgg)
         {
             SetHint(
-                "You are ready for your dragon."
+                "Return to the hatchery and choose one dragon egg."
             );
+        }
+        else
+        {
+            SetHint("");
         }
     }
 

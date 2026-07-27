@@ -16,9 +16,31 @@ public class PlayerInventory : MonoBehaviour
     public bool hasBackpack = false;
     public bool hasSaddle = false;
     public bool hasDragonEgg = false;
+    public DragonEggType selectedDragonEgg = DragonEggType.None;
 
     [Header("Progress")]
     public int totalPickups = 0;
+
+    public string SelectedDragonEggName
+    {
+        get
+        {
+            switch (selectedDragonEgg)
+            {
+                case DragonEggType.Emerald:
+                    return "Emerald Egg";
+
+                case DragonEggType.Ruby:
+                    return "Ruby Egg";
+
+                case DragonEggType.Sapphire:
+                    return "Sapphire Egg";
+
+                default:
+                    return "None";
+            }
+        }
+    }
 
     public void AddPickup(StoryPickup.PickupType pickupType)
     {
@@ -35,12 +57,58 @@ public class PlayerInventory : MonoBehaviour
                 break;
 
             case StoryPickup.PickupType.DragonEgg:
-                hasDragonEgg = true;
+                // Kept for compatibility with any older StoryPickup objects.
+                // The new hatchery system should use TryChooseDragonEgg instead.
+                if (!hasDragonEgg)
+                {
+                    hasDragonEgg = true;
+                    totalPickups++;
+                }
+
                 Debug.Log("Inventory updated: Dragon egg collected.");
-                break;
+                return;
         }
 
         totalPickups++;
+    }
+
+    public bool TryChooseDragonEgg(DragonEggType eggType)
+    {
+        if (hasDragonEgg)
+        {
+            Debug.Log(
+                "A dragon egg has already been chosen: " +
+                SelectedDragonEggName
+            );
+
+            return false;
+        }
+
+        if (eggType == DragonEggType.None)
+        {
+            Debug.LogWarning(
+                "Cannot choose a dragon egg with the type None.",
+                this
+            );
+
+            return false;
+        }
+
+        selectedDragonEgg = eggType;
+        hasDragonEgg = true;
+        totalPickups++;
+
+        Debug.Log(
+            "Dragon egg chosen: " +
+            SelectedDragonEggName
+        );
+
+        if (GameUIManager.Instance != null)
+        {
+            GameUIManager.Instance.RefreshInventoryUI();
+        }
+
+        return true;
     }
 
     public bool CanAfford(int cost)
@@ -114,7 +182,10 @@ public class PlayerInventory : MonoBehaviour
     {
         if (!hasBow)
         {
-            Debug.Log("You need to own a bow before buying replacement arrows.");
+            Debug.Log(
+                "You need to own a bow before buying replacement arrows."
+            );
+
             return false;
         }
 
@@ -153,7 +224,9 @@ public class PlayerInventory : MonoBehaviour
 
         if (arrowCount == 0)
         {
-            Debug.Log("Return to the Fletcher for more arrows.");
+            Debug.Log(
+                "Return to the Fletcher for more arrows."
+            );
 
             if (GameUIManager.Instance != null)
             {

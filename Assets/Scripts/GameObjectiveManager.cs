@@ -11,9 +11,9 @@ public class GameObjectiveManager : MonoBehaviour
         CompleteArcheryTraining,
         HuntDeer,
         ReadyForDragon,
-
-        // Kept so older scripts referencing these states still compile.
         ChooseDragonEgg,
+
+        // Kept so older scripts referencing this state still compile.
         BoardBoat,
 
         Complete
@@ -32,6 +32,16 @@ public class GameObjectiveManager : MonoBehaviour
 
     private PlayerInventory playerInventory;
     private bool gameComplete;
+
+    public bool IsGameComplete
+    {
+        get
+        {
+            return
+                gameComplete ||
+                currentObjective == ObjectiveState.Complete;
+        }
+    }
 
     private void Start()
     {
@@ -113,22 +123,32 @@ public class GameObjectiveManager : MonoBehaviour
             return ObjectiveState.BuyBowAndArrows;
         }
 
-        if (playerInventory.arrowCount <= 0)
-        {
-            return ObjectiveState.RestockArrows;
-        }
-
         if (!archeryTrainingComplete)
         {
+            if (playerInventory.arrowCount <= 0)
+            {
+                return ObjectiveState.RestockArrows;
+            }
+
             return ObjectiveState.CompleteArcheryTraining;
         }
 
         if (deerCollected < deerRequired)
         {
+            if (playerInventory.arrowCount <= 0)
+            {
+                return ObjectiveState.RestockArrows;
+            }
+
             return ObjectiveState.HuntDeer;
         }
 
-        return ObjectiveState.ReadyForDragon;
+        if (!playerInventory.hasDragonEgg)
+        {
+            return ObjectiveState.ChooseDragonEgg;
+        }
+
+        return ObjectiveState.Complete;
     }
 
     private void RefreshCurrentObjective()
@@ -182,13 +202,9 @@ public class GameObjectiveManager : MonoBehaviour
                     deerRequired;
 
             case ObjectiveState.ReadyForDragon:
-                return
-                    "You have proven yourself. " +
-                    "You are ready for your dragon.";
-
             case ObjectiveState.ChooseDragonEgg:
                 return
-                    "Return to the egg chamber and choose your dragon egg.";
+                    "Return to the hatchery and choose your dragon egg.";
 
             case ObjectiveState.BoardBoat:
                 return
@@ -196,6 +212,7 @@ public class GameObjectiveManager : MonoBehaviour
 
             case ObjectiveState.Complete:
                 return
+                    "You have chosen your dragon egg. " +
                     "Your training is complete.";
 
             default:
@@ -212,7 +229,9 @@ public class GameObjectiveManager : MonoBehaviour
 
         archeryTrainingComplete = true;
 
-        Debug.Log("Archery training marked complete.");
+        Debug.Log(
+            "Archery training marked complete."
+        );
 
         RefreshCurrentObjective();
     }
@@ -247,20 +266,30 @@ public class GameObjectiveManager : MonoBehaviour
 
     public bool CanChooseDragonEgg()
     {
+        if (playerInventory == null)
+        {
+            FindPlayerInventory();
+        }
+
         return
-            currentObjective == ObjectiveState.ReadyForDragon ||
-            currentObjective == ObjectiveState.ChooseDragonEgg;
+            playerInventory != null &&
+            !playerInventory.hasDragonEgg &&
+            archeryTrainingComplete &&
+            deerCollected >= deerRequired;
     }
 
     public bool CanBoardBoat()
     {
-        return currentObjective == ObjectiveState.BoardBoat;
+        return
+            currentObjective ==
+            ObjectiveState.BoardBoat;
     }
 
     public void CompleteGame()
     {
         gameComplete = true;
-        currentObjective = ObjectiveState.Complete;
+        currentObjective =
+            ObjectiveState.Complete;
 
         SendObjectiveToUI();
 
